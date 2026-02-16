@@ -8,7 +8,7 @@ project "http-server"
    files { "src/**.h", "src/**.c" }
 
    filter { "configurations:Debug" }
-      buildoptions {"-Wall", "-pedantic"}
+      buildoptions {"-Wall", "-Wextra", "-Werror", "-Wpedantic"}
       defines { "DEBUG" }
       symbols "On"
 
