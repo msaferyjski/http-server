@@ -3,6 +3,6 @@
 #define PORT 8080
 
 i32 main(void) {
-    start(PORT);
+    server_start(PORT);
     return 0;
 }

@@ -23,7 +23,7 @@ i32 listen_socket(socket_t* sock, i32 n) {
     return listen(sock->socket_fd, n);
 }
 
-socket_t* create_socket(net_family_t family, const char* addr, i16 port, net_prot_t prot) {
+socket_t* create_socket(net_family_t family, const char* addr, u16 port, net_prot_t prot) {
     socket_t* sock = malloc(sizeof(socket_t));
 
     if (!sock) {
@@ -64,7 +64,7 @@ i32 set_socket_opt(socket_t* sock, i32 opt, i32 optval) {
     return setsockopt(sock->socket_fd, SOL_SOCKET, opt, &optval, sizeof(optval));
 }
 
-socket_t* create_server_socket(const char* addr, short port, net_prot_t prot) {
+socket_t* create_server_socket(const char* addr, u16 port, net_prot_t prot) {
     if (!addr)
         return NULL;
 
