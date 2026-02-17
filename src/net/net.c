@@ -9,8 +9,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-i32 bind_socket(socket_t* sock) 
-{
+i32 bind_socket(socket_t* sock) {
     if (!sock)
         return -1;
 
@@ -24,7 +23,7 @@ i32 listen_socket(socket_t* sock, i32 n) {
     return listen(sock->socket_fd, n);
 }
 
-socket_t* create_socket(net_family_t family, const char* addr, short port, net_prot_t prot) {
+socket_t* create_socket(net_family_t family, const char* addr, i16 port, net_prot_t prot) {
     socket_t* sock = malloc(sizeof(socket_t));
 
     if (!sock) {
@@ -51,6 +50,13 @@ socket_t* create_socket(net_family_t family, const char* addr, short port, net_p
     return sock;
 } 
 
+void destroy_socket(socket_t* sock) {
+    if (!sock) 
+        return;
+    close(sock->socket_fd);
+    free(sock);
+}
+
 i32 set_socket_opt(socket_t* sock, i32 opt, i32 optval) {
     if (!sock) 
         return -1;
@@ -69,23 +75,20 @@ socket_t* create_server_socket(const char* addr, short port, net_prot_t prot) {
     }
 
     if (set_socket_opt(sock, SO_REUSEADDR, 1)) {
-        close(sock->socket_fd);
-        free(sock);
         perror("net: setsockopt");
+        destroy_socket(sock);
         return NULL;
     }
  
     if (bind_socket(sock) == -1) {
-        close(sock->socket_fd);
-        free(sock);
         perror("net: bind");
+        destroy_socket(sock);
         return NULL;
     }
 
     if (listen_socket(sock, 3) == -1 ) {
-        close(sock->socket_fd);
-        free(sock);
         perror("net: listen_socket");
+        destroy_socket(sock);
         return NULL;
     }
 
@@ -96,17 +99,17 @@ socket_t* accept_socket(socket_t* sock) {
     if (!sock)
         return NULL;
 
-    socket_t* new_sock = malloc(sizeof(socket_t));
-    socklen_t addr_len = sizeof(new_sock->sockaddr);
-    i32 res_fd = accept(sock->socket_fd, (struct sockaddr*) &(new_sock->sockaddr), &addr_len);
-    if (res_fd == -1) {
-        free(new_sock);
+    socket_t* client_sock = malloc(sizeof(socket_t));
+    socklen_t addr_len = sizeof(client_sock->sockaddr);
+    i32 client_fd = accept(sock->socket_fd, (struct sockaddr*) &(client_sock->sockaddr), &addr_len);
+    if (client_fd == -1) {
         perror("net: accept");
+        free(client_sock);
         return NULL;
     }
 
-    new_sock->socket_fd = res_fd;
-    return new_sock;
+    client_sock->socket_fd = client_fd;
+    return client_sock;
 }
 
 ssize_t read_socket(socket_t* sock, void* buf, size_t len) {
